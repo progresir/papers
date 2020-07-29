@@ -1,20 +1,12 @@
 package papers
 
 import (
-	"errors"
+	"fmt"
+	"regexp"
 	"strconv"
 )
 
-var (
-	ErrSnils                        = errors.New("Incorrect SNILS")
-	ErrSnilsCotainInvalidCharacters = errors.New("SNILS must consist only of numbers")
-	ErrINN                          = errors.New("Incorrect INN")
-)
-
-type Papers interface {
-	ValidateSnils(snils string) error
-	ValidateInn(inn string) error
-}
+type SNILS string
 
 func ValidateSnils(snils string) error {
 	switch len([]rune(snils)) {
@@ -64,6 +56,12 @@ func ValidateSnils(snils string) error {
 
 	}
 	return ErrSnils
+}
+
+func ParseSNILS(s string) SNILS {
+	var re = regexp.MustCompile(`[[:punct:]]|[[:space:]]`)
+	sResalt := re.ReplaceAllString(s, "")
+	return SNILS(sResalt)
 }
 
 func ValidateInn(inn string) error {
@@ -131,4 +129,20 @@ func checkMinValueSNILS(snils string) error {
 		return ErrSnilsCotainInvalidCharacters
 	}
 	return ErrSnils
+}
+
+func (s SNILS) PrettyPrint() string {
+	switch len(s) {
+	case 9:
+		return fmt.Sprintf("%s-%s-%s", s[:3], s[3:6], s[6:])
+	case 11:
+		return fmt.Sprintf("%s-%s-%s %s", s[:3], s[3:6], s[6:9], s[9:])
+	}
+	return fmt.Sprintf("%s", s)
+}
+
+func (s SNILS) Minimized() string {
+	var re = regexp.MustCompile(`[[:punct:]]|[[:space:]]`)
+	sResalt := re.ReplaceAllString(string(s), "")
+	return fmt.Sprintf(sResalt)
 }
