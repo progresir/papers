@@ -13,7 +13,7 @@ func TestBedOtherCountSymbolSNILS(t *testing.T) {
 		`1585"63074313`,
 	}
 	for i := range snils {
-		err := ValidateSnils(snils[i])
+		_, err := ValidateSnils(snils[i])
 		if err != ErrSnils {
 			t.Errorf("Snils verification error: %s", snils[i])
 		}
@@ -28,9 +28,9 @@ func TestBedOtherSymbolSNILS(t *testing.T) {
 		`1585"64b307`,
 	}
 	for i := range snils {
-		err := ValidateSnils(snils[i])
-		if err != ErrSnilsCotainInvalidCharacters {
-			t.Errorf("Snils verification error: %s", snils[i])
+		_, err := ValidateSnils(snils[i])
+		if err == nil {
+			t.Errorf("Snils verification error: %s || %s", snils[i], err.Error())
 		}
 	}
 }
@@ -46,7 +46,7 @@ func TestBedSNILS(t *testing.T) {
 	}
 	fmt.Println()
 	for i := range snils {
-		outputfunc := ValidateSnils(snils[i])
+		_, outputfunc := ValidateSnils(snils[i])
 		if outputfunc != ErrSnils {
 			t.Errorf("Snils verification error: %s", snils[i])
 		}
@@ -126,7 +126,7 @@ func TestWellSNILS(t *testing.T) {
 	}
 
 	for i := range snils {
-		outputfunc := ValidateSnils(snils[i])
+		_, outputfunc := ValidateSnils(snils[i])
 		if outputfunc != nil {
 			t.Errorf("Snils verification error: %s", snils[i])
 		}

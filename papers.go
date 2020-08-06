@@ -7,55 +7,57 @@ import (
 )
 
 type SNILS string
+type INN string
 
-func ValidateSnils(snils string) error {
+func ValidateSnils(snilsInPut string) (SNILS, error) {
+	snils := ParseSNILS(snilsInPut)
 	switch len([]rune(snils)) {
 	case 9:
-		err := checkMinValueSNILS(snils)
-		return err
+		err := snils.checkMinValueSNILS()
+		return snils, err
 	case 11:
-		err := checkMinValueSNILS(snils)
+		err := snils.checkMinValueSNILS()
 		if err != nil {
-			return err
+			return snils, err
 		}
 		var sum = 0
 		for i := 0; i < 9; i++ {
-			number, err := strconv.Atoi(string(snils[i]))
+			number, err := strconv.Atoi(string(string(snils[i])))
 			if err != nil {
-				return ErrSnilsCotainInvalidCharacters
+				return snils, ErrSnilsCotainInvalidCharacters
 			}
 			sum += number * (9 - i)
 		}
 		var checkDigit = 0
 		if sum < 1 {
-			return ErrSnils
+			return snils, ErrSnils
 		}
 		if sum < 100 {
-			conterSum, err := strconv.Atoi(snils[9:])
+			conterSum, err := strconv.Atoi(string(snils[9:]))
 			if err != nil {
-				return ErrSnilsCotainInvalidCharacters
+				return snils, ErrSnilsCotainInvalidCharacters
 			}
 			if sum == conterSum {
-				return nil
+				return snils, nil
 			}
-			return ErrSnils
+			return snils, ErrSnils
 		} else {
 			checkDigit = sum % 101
 			if checkDigit == 100 {
 				checkDigit = 0
 			}
 
-			conterSum, err := strconv.Atoi(snils[9:])
+			conterSum, err := strconv.Atoi(string(snils[9:]))
 			if err != nil {
-				return ErrSnilsCotainInvalidCharacters
+				return snils, ErrSnilsCotainInvalidCharacters
 			}
 			if checkDigit == conterSum {
-				return nil
+				return snils, nil
 			}
 		}
 
 	}
-	return ErrSnils
+	return snils, ErrSnils
 }
 
 func ParseSNILS(s string) SNILS {
@@ -64,7 +66,54 @@ func ParseSNILS(s string) SNILS {
 	return SNILS(sResalt)
 }
 
-func ValidateInn(inn string) error {
+func (s SNILS) checkMinValueSNILS() error {
+	number, err := strconv.Atoi(string(s[:2]))
+	if err != nil {
+		return ErrSnilsCotainInvalidCharacters
+	}
+	if number > 1 {
+		return nil
+	}
+	number, err = strconv.Atoi(string(s[2:5]))
+	if err != nil {
+		return ErrSnilsCotainInvalidCharacters
+	}
+	if number > 1 {
+		return nil
+	}
+	number, err = strconv.Atoi(string(s[2:5]))
+	if err != nil {
+		return ErrSnilsCotainInvalidCharacters
+	}
+	if number < 999 {
+		return ErrSnilsCotainInvalidCharacters
+	}
+	return ErrSnils
+}
+
+func (s SNILS) PrettyPrint() string {
+	switch len(s) {
+	case 9:
+		return fmt.Sprintf("%s-%s-%s", s[:3], s[3:6], s[6:])
+	case 11:
+		return fmt.Sprintf("%s-%s-%s %s", s[:3], s[3:6], s[6:9], s[9:])
+	}
+	return fmt.Sprintf("%s", s)
+}
+
+func (s SNILS) Minimized() string {
+	var re = regexp.MustCompile(`[[:punct:]]|[[:space:]]`)
+	sResalt := re.ReplaceAllString(string(s), "")
+	return fmt.Sprintf(sResalt)
+}
+
+func (s SNILS) String() string {
+	return fmt.Sprintf(string(s))
+}
+
+//INN
+func ValidateInn(innInput string) error {
+	inn := ParseINN(innInput)
 	switch len([]rune(inn)) {
 	case 10:
 		n10 := checkDigit(inn, []int{2, 4, 10, 3, 5, 9, 4, 6, 8})
@@ -94,7 +143,7 @@ func ValidateInn(inn string) error {
 	return ErrINN
 }
 
-func checkDigit(inn string, arr []int) int {
+func checkDigit(inn INN, arr []int) int {
 	var n = 0
 	for i := range arr {
 		number, err := strconv.Atoi(string(inn[i]))
@@ -106,43 +155,12 @@ func checkDigit(inn string, arr []int) int {
 	return n % 11 % 10
 }
 
-func checkMinValueSNILS(snils string) error {
-	number, err := strconv.Atoi(string(snils[:2]))
-	if err != nil {
-		return ErrSnilsCotainInvalidCharacters
-	}
-	if number > 1 {
-		return nil
-	}
-	number, err = strconv.Atoi(string(snils[2:5]))
-	if err != nil {
-		return ErrSnilsCotainInvalidCharacters
-	}
-	if number > 1 {
-		return nil
-	}
-	number, err = strconv.Atoi(string(snils[2:5]))
-	if err != nil {
-		return ErrSnilsCotainInvalidCharacters
-	}
-	if number < 999 {
-		return ErrSnilsCotainInvalidCharacters
-	}
-	return ErrSnils
-}
-
-func (s SNILS) PrettyPrint() string {
-	switch len(s) {
-	case 9:
-		return fmt.Sprintf("%s-%s-%s", s[:3], s[3:6], s[6:])
-	case 11:
-		return fmt.Sprintf("%s-%s-%s %s", s[:3], s[3:6], s[6:9], s[9:])
-	}
-	return fmt.Sprintf("%s", s)
-}
-
-func (s SNILS) Minimized() string {
+func ParseINN(inn string) INN {
 	var re = regexp.MustCompile(`[[:punct:]]|[[:space:]]`)
-	sResalt := re.ReplaceAllString(string(s), "")
-	return fmt.Sprintf(sResalt)
+	innResalt := re.ReplaceAllString(inn, "")
+	return INN(innResalt)
+}
+
+func (inn INN) String() string {
+	return fmt.Sprintf(string(inn))
 }
